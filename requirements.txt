@@ -1,0 +1,11 @@
+
+#### **3.3 `requirements.txt`**
+
+```plaintext
+streamlit
+azure-openai
+langchain
+python-dotenv
+numpy 
+pandas 
+requests

@@ -1,0 +1,171 @@
+my_project/
+│
+├── .env                    # Environment variables (optional, not committed)
+├── .gitignore              # Git ignore file
+├── README.md               # Project documentation
+├── requirements.txt        # Python dependencies
+├── setup.sh                # Shell script to set up the environment (optional)
+├── pytest.ini              # Pytest configuration file
+│
+├── app.py                  # Main Streamlit application
+├── azure_openai/           # Azure OpenAI related code
+│   ├── __init__.py
+│   └── client.py           # Azure OpenAI client code
+│
+├── langchain_pipeline/     # Langchain related code
+│   ├── __init__.py
+│   └── pipeline.py         # Langchain pipeline code
+│
+├── utils/                  # Utility functions
+│   ├── __init__.py
+│   └── helpers.py          # Helper functions
+│
+├── tests/                  # Test cases
+│   ├── __init__.py
+│   ├── test_client.py      # Test cases for Azure OpenAI client
+│   ├── test_pipeline.py    # Test cases for Langchain pipeline
+│   ├── test_helpers.py     # Test cases for utility functions
+│   ├── test_end_to_end.py  # End-to-end test cases for the entire system
+│
+└── .github/
+    └── workflows/
+        └── ci.yml          # GitHub Actions CI workflow for running tests
+#This project setup provides a comprehensive structure and implementation for a Python-#based Streamlit application that integrates with Azure OpenAI and Langchain to do an #Automated contract review
+#Provisioning Azure resources such as Azure OpenAI Service, Blob Storage, and other #necessary services can be done using the Azure Portal, Azure CLI, or Azure Resource #Manager (ARM) templates. Below, I'll guide you through provisioning these resources #using the Azure CLI, which is a powerful and scriptable way to manage Azure resources.
+##### 1. Install Azure CLI
+#If you haven't already installed Azure CLI, follow the installation guide for your operating #system.
+brew update && brew install azure-cli
+##### 2. Log in to Azure
+# First, you need to log in to your Azure account:
+az login
+#This will open a browser window for you to authenticate. After logging in, you'll be #returned to the CLI.
+##### 3. Set the Default Subscription (Optional)
+#If you have multiple subscriptions, set the default subscription where you want to create #the resources:
+az account set --subscription "your-subscription-id"
+#You can list your subscriptions to find the correct one:
+az account list --output table
+##### 4. Provision an Azure Resource Group
+#A resource group is a container that holds related resources for an Azure solution.
+az group create --name myResourceGroup --location eastus
+#Replace myResourceGroup with the name you want for your resource group and eastus #with the Azure region closest to you or where your services should be deployed.
+###### 5. Provision Azure Blob Storage
+# Azure Blob Storage is used to store unstructured data like text, binary data, etc.
+az storage account create \
+  --name mystorageaccount12345 \
+  --resource-group myResourceGroup \
+  --location eastus \
+  --sku Standard_LRS \
+  --kind StorageV2
+# Replace mystorageaccount12345 with a unique name for your storage account.
+# After creating the storage account, create a blob container to store your files:
+az storage container create \
+  --name myblobcontainer \
+  --account-name mystorageaccount12345
+# Replace myblobcontainer with the name you want for your blob container.
+##### 6. Provision Azure OpenAI Service
+# Azure OpenAI Service provides access to OpenAI's models, including GPT, in Azure.
+1.	### Register the Provider (if not already registered):
+#Before you can create Azure OpenAI resources, you must register the OpenAI resource provider in your subscription:
+az provider register --namespace Microsoft.CognitiveServices
+2.	##### Create an Azure OpenAI Service Resource:
+az cognitiveservices account create \
+  --name myOpenAIService \
+  --resource-group myResourceGroup \
+  --kind OpenAI \
+  --sku S0 \
+  --location eastus \
+  --yes
+o	--name: The name of your Azure OpenAI service.
+o	--kind: Must be set to OpenAI.
+o	--sku: Pricing tier; S0 is a common choice for development.
+o	--location: The region where the service is deployed.
+##### 7. Provision an Azure App Service for Web Apps (Optional)
+#If you're planning to deploy a web application, you might need an Azure App Service.
+1.	### Create an App Service Plan:
+az appservice plan create \
+  --name myAppServicePlan \
+  --resource-group myResourceGroup \
+  --sku B1 \
+  --is-linux
+o	--sku B1: This specifies the pricing tier. Adjust based on your requirements.
+o	--is-linux: Specifies that the app service plan is for Linux.
+2.	### Create the Web App:
+az webapp create \
+  --resource-group myResourceGroup \
+  --plan myAppServicePlan \
+  --name myWebApp12345 \
+  --runtime "PYTHON|3.9"
+o	# Replace myWebApp12345 with a unique name for your web app.
+##### 8. Retrieve and Manage Connection Strings and Keys
+#For services like Blob Storage or Azure OpenAI, you may need to retrieve connection #strings or keys.
+1.	## For Blob Storage:
+az storage account show-connection-string \
+  --name mystorageaccount12345 \
+  --resource-group myResourceGroup
+# This will return the connection string needed to connect to your Blob Storage.
+2.	## For Azure OpenAI Service:
+az cognitiveservices account keys list \
+  --name myOpenAIService \
+  --resource-group myResourceGroup
+# This will return the keys for your Azure OpenAI Service.
+##### 9. Verify the Resources in the Azure Portal
+#You can go to the Azure Portal and navigate to your resource group to verify that all the #resources have been successfully created.
+##### 10. Automating with ARM Templates (Optional)
+#If you prefer to automate the creation of these resources with an ARM template, you can #define all these resources in a JSON template and deploy it using the Azure CLI:
+az deployment group create --resource-group myResourceGroup --template-file azuredeploy.json
+#Your azuredeploy.json would define the storage account, OpenAI service, and other #resources in a single template.
+#You've now provisioned several key Azure resources, including Azure Blob Storage, Azure #OpenAI Service, and an optional App Service for deploying web applications. These #resources can now be used as part of your broader application architecture in Azure. You #can manage these resources using the Azure CLI, Azure Portal, or automated deployment #tools like ARM templates or Terraform.
+########################## Setting Up the Development Environment #############
+#Setting up a development environment with Python and the necessary libraries like azure-#openai, langchain, streamlit, and others involves several steps. Here's how you can do #it:
+##### 1. Install Python
+#Ensure you have Python installed on your system. You can download and install the latest #version of Python from the official Python website.
+#####2. Set Up a Virtual Environment
+#It’s a good practice to create a virtual environment for your project. This keeps your #project dependencies isolated and helps avoid conflicts with other Python projects.
+1.	# Create a Virtual Environment:
+python -m venv myenv
+# Replace myenv with the name of your virtual environment.
+2.	# Activate the Virtual Environment:
+o	On Windows:
+myenv\Scripts\activate
+o	On macOS/Linux:
+source myenv/bin/activate
+3.	#After activation, you should see the virtual environment’s name in your terminal #prompt.
+3. Install Required Python Libraries
+With the virtual environment activated, you can install the required Python libraries.
+1.	#Upgrade pip:
+#Ensure you have the latest version of pip:
+python -m pip install --upgrade pip
+2.	#Install Libraries:
+#Use pip to install the necessary libraries. Here's how to install azure-openai, #langchain, streamlit, and other commonly used libraries:
+pip install azure-openai langchain streamlit
+#You might also need additional libraries depending on your project, such as numpy, #pandas, or requests:
+pip install numpy pandas requests
+3.	# Generate a requirements.txt File (Optional):
+#If you want to share your environment setup with others or deploy it, you can #generate a requirements.txt file:
+pip freeze > requirements.txt
+#This file can later be used to install all the dependencies with a single command:
+pip install -r requirements.txt
+5. ###### Create a Simple Streamlit App Using Azure OpenAI and Langchain
+# Replace the placeholders with your Azure OpenAI API key and deployment details.
+6. # Running the Streamlit App
+#Once everything is set up, you can run your Streamlit app using the following command:
+streamlit run app.py
+#This will start a local development server, and you can access your app by visiting #http://localhost:8501 in your web browser.
+######### OR if you are starting by cloning the repo, this are the set up ###### instructions on how you do a Streamlit Azure OpenAI Integration
+
+
+1. **Clone the repository:**
+   git clone https://github.com/yourusername/your-repo.git
+   cd your-repo
+2.	#Set up the virtual environment:
+python -m venv env
+source env/bin/activate  # On Windows: env\Scripts\activate
+3.	#Install dependencies:
+pip install -r requirements.txt
+4.	#Configure environment variables:
+o	#Create a .env file in the root directory and add the following variables:
+OPENAI_API_KEY=your-openai-api-key
+AZURE_OPENAI_ENDPOINT=https://your-openai-endpoint.azure.com/
+AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
+5.	# Run the application:
+streamlit run app.py
